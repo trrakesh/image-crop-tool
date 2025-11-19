@@ -1,0 +1,33 @@
+{
+  "name": "image-crop-electron",
+  "version": "1.0.0",
+  "description": "An Electron app for selecting and cropping images",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "build": "electron-builder",
+    "dist": "electron-builder --publish=never"
+  },
+  "author": "Your Name",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^27.0.0",
+    "electron-builder": "^24.6.4"
+  },
+  "dependencies": {
+    "cropperjs": "^1.6.1"
+  },
+  "build": {
+    "appId": "com.example.imagecrop",
+    "productName": "Image Crop",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "renderer/**/*",
+      "package.json"
+    ]
+  }
+}
