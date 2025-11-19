@@ -81,11 +81,23 @@ ipcMain.handle('select-image', async () => {
   }
 });
 
+// Global counter for sequential numbering
+let imageCounter = 1;
+
+// Function to reset counter (optional)
+function resetImageCounter() {
+  imageCounter = 1;
+}
+
 ipcMain.handle('save-image', async (event, saveData) => {
   try {
     const { dataURL, size, format, extension } = saveData;
-    const timestamp = new Date().toISOString().replace(/[:.]/g, '-').split('T')[0];
-    const defaultName = `cropped_${size}x${size}_${timestamp}.${extension}`;
+    
+    // Generate sequential filename like 0001.png, 0002.png, etc.
+    const sequentialNumber = String(imageCounter).padStart(4, '0');
+    const defaultName = `${sequentialNumber}.${extension}`;
+    
+    console.log(`Suggesting filename: ${defaultName} (counter: ${imageCounter})`);
     
     // Create appropriate file filters based on format
     const filters = [];
@@ -109,7 +121,7 @@ ipcMain.handle('save-image', async (event, saveData) => {
       filters: filters,
       properties: ['createDirectory']
     });
-
+    
     if (!result.canceled && result.filePath) {
       let buffer;
       
@@ -124,6 +136,11 @@ ipcMain.handle('save-image', async (event, saveData) => {
       
       const fileStats = fs.statSync(result.filePath);
       const fileSizeKB = (fileStats.size / 1024).toFixed(1);
+      
+      // Always increment counter after successful save
+      const savedFileName = path.basename(result.filePath);
+      console.log(`File saved: ${savedFileName}, incrementing counter from ${imageCounter} to ${imageCounter + 1}`);
+      imageCounter++;
       
       return {
         success: true,
