@@ -21,6 +21,7 @@ const qualityContainer = document.getElementById('qualityContainer');
 const qualitySlider = document.getElementById('qualitySlider');
 const qualityValue = document.getElementById('qualityValue');
 const previewDimensions = document.getElementById('previewDimensions');
+const appTitle = document.getElementById('appTitle');
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
@@ -52,6 +53,8 @@ function setupEventListeners() {
 function selectImage() {
     window.electronAPI.selectImage().then(result => {
         if (result && result.success) {
+            // Update title with filename
+            appTitle.textContent = `Image Crop Tool - ${result.fileName}`;
             loadImage(result.dataUrl);
         }
     }).catch(error => {
