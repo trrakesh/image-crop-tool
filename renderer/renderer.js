@@ -146,60 +146,49 @@ function updateSizeButtonStates(activeBtn) {
 }
 
 function updateCropInfo(detail) {
-    // Get the actual coordinates and size in the original image
+    if (!cropper) return;
+    
+    // Use Cropper.js getData method for accurate crop information
+    const cropData = cropper.getData();
+    
+    // Round the values for display
+    const x = Math.round(cropData.x);
+    const y = Math.round(cropData.y);
+    const width = Math.round(cropData.width);
+    const height = Math.round(cropData.height);
+    
+    cropPosition.textContent = `(${x}, ${y})`;
+    cropSize.textContent = `${width}×${height}px`;
+    
+    // Debug log for verification
     const imageData = cropper.getImageData();
-    const scaleX = imageData.naturalWidth / imageData.width;
-    const scaleY = imageData.naturalHeight / imageData.height;
-    
-    // Calculate actual pixel coordinates in the original image
-    const actualX = Math.round(detail.x * scaleX);
-    const actualY = Math.round(detail.y * scaleY);
-    const actualWidth = Math.round(detail.width * scaleX);
-    const actualHeight = Math.round(detail.height * scaleY);
-    
-    cropPosition.textContent = `(${actualX}, ${actualY})`;
-    cropSize.textContent = `${actualWidth}×${actualHeight}px`;
+    console.log(`Image: ${imageData.naturalWidth}×${imageData.naturalHeight}, Crop: (${x}, ${y}) ${width}×${height}`);
 }
 
 function cropImage() {
     if (!cropper || !selectedCropSize) return;
     
-    // Get the crop box data and image data for precise cropping
-    const cropBoxData = cropper.getCropBoxData();
-    const imageData = cropper.getImageData();
-    const canvasData = cropper.getCanvasData();
+    // Use Cropper.js built-in getCroppedCanvas for accurate cropping
+    const croppedCanvas = cropper.getCroppedCanvas({
+        width: selectedCropSize,
+        height: selectedCropSize,
+        minWidth: selectedCropSize,
+        minHeight: selectedCropSize,
+        maxWidth: selectedCropSize,
+        maxHeight: selectedCropSize,
+        fillColor: '#ffffff',
+        imageSmoothingEnabled: true,
+        imageSmoothingQuality: 'high'
+    });
     
-    // Calculate the scale between display and natural image size
-    const scaleX = imageData.naturalWidth / imageData.width;
-    const scaleY = imageData.naturalHeight / imageData.height;
-    
-    // Calculate actual crop coordinates in the original image
-    const cropX = (cropBoxData.left - imageData.left) * scaleX;
-    const cropY = (cropBoxData.top - imageData.top) * scaleY;
-    const cropWidth = cropBoxData.width * scaleX;
-    const cropHeight = cropBoxData.height * scaleY;
-    
-    // Get the original image element
-    const originalImage = cropper.element;
-    
-    // Create a temporary canvas for precise cropping
-    const tempCanvas = document.createElement('canvas');
-    tempCanvas.width = selectedCropSize;
-    tempCanvas.height = selectedCropSize;
-    const tempCtx = tempCanvas.getContext('2d');
-    
-    // Draw the cropped portion at exact selected size
-    tempCtx.drawImage(
-        originalImage,
-        cropX, cropY, cropWidth, cropHeight,  // Source coordinates and size
-        0, 0, selectedCropSize, selectedCropSize  // Destination coordinates and size
-    );
-    
-    // Update preview canvas with the precisely cropped image
+    // Update preview canvas with the accurately cropped image
     const ctx = previewCanvas.getContext('2d');
     previewCanvas.width = selectedCropSize;
     previewCanvas.height = selectedCropSize;
-    ctx.drawImage(tempCanvas, 0, 0);
+    
+    // Clear canvas and draw the cropped result
+    ctx.clearRect(0, 0, selectedCropSize, selectedCropSize);
+    ctx.drawImage(croppedCanvas, 0, 0);
     
     // Update preview dimensions display
     previewDimensions.textContent = `Output: ${selectedCropSize}×${selectedCropSize}px`;
@@ -208,7 +197,7 @@ function cropImage() {
     previewContainer.style.display = 'block';
     saveBtn.disabled = false;
     
-    console.log(`Image cropped to exact ${selectedCropSize}×${selectedCropSize}px`);
+    console.log(`Image cropped to exact ${selectedCropSize}×${selectedCropSize}px using Cropper.js`);
 }
 
 function toggleQualityControls() {
